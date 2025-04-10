@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tabel Informasi Sapi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        img {
+            border-radius: 8px;
+        }
+        .card img {
+            max-width: 100px;
+        }
+        .card {
+            margin-bottom: 1rem;
+        }
+        .table-container {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .table-container {
+                display: none;
+            }
+            .card-container {
+                display: block;
+            }
+        }
+        @media (min-width: 769px) {
+            .card-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Informasi Sapi</h1>
+        <div class="d-flex justify-content-end mb-3">
+            <input type="text" id="filter-input" class="form-control w-50" placeholder="Filter berdasarkan Keterangan...">
+        </div>
+
+        <!-- Tabel untuk perangkat besar -->
+        <div class="table-container">
+            <table class="table table-bordered table-hover" id="data-table">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nomor Kendang</th>
+                        <th>Nomor Sapi</th>
+                        <th id="height-header">Tinggi Sapi</th>
+                        <th id="weight-header">Berat Sapi</th>
+                        <th>Foto</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data akan dimasukkan di sini -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cards untuk perangkat kecil -->
+        <div class="card-container" id="card-container">
+            <!-- Data akan dimasukkan di sini -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const apiURL = "https://api.sheetbest.com/sheets/2b968158-9815-412e-b475-ccea9febca68";
+
+        async function loadData() {
+            try {
+                const response = await fetch(apiURL);
+                const data = await response.json();
+
+                const tableBody = document.querySelector("#data-table tbody");
+                const cardContainer = document.getElementById("card-container");
+                data.forEach(row => {
+                    // Tambahkan data ke tabel
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${row["Kandang"]}</td>
+                        <td>${row["Sapi"]}</td>
+                        <td>${row["Tinggi"]}</td>
+                        <td>${row["Berat"]}</td>
+                        <td>${row["Foto"]}</td>
+                        <td>${row["Keterangan"]}</td>
+                    `;
+                    tableBody.appendChild(tr);
+
+                    // Tambahkan data ke Card
+                    const card = document.createElement("div");
+                    card.className = "card shadow";
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">Nomor Kendang: ${row["Kandang"]}</h5>
+                            <p class="card-text">Nomor Sapi: ${row["Sapi"]}</p>
+                            <p class="card-text">Tinggi: ${row["Tinggi"]}</p>
+                            <p class="card-text">Berat: ${row["Berat"]}</p>
+                            <p class="card-text">Foto: ${row["Foto"]}</p>
+                            <p class="card-text"><strong>Keterangan:</strong> ${row["Keterangan"]}</p>
+                        </div>
+                    `;
+                    cardContainer.appendChild(card);
+                });
+
+                addFilter();  // Tambahkan filter setelah data dimuat
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        function addFilter() {
+            const filterInput = document.getElementById("filter-input");
+            filterInput.addEventListener("input", () => {
+                const filterValue = filterInput.value.toLowerCase();
+
+                // Filter untuk tabel
+                const rows = document.querySelectorAll("#data-table tbody tr");
+                rows.forEach(row => {
+                    const keterangan = row.children[5].textContent.toLowerCase();
+                    row.style.display = keterangan.includes(filterValue) ? "" : "none";
+                });
+
+                // Filter untuk Card
+                const cards = document.querySelectorAll("#card-container .card");
+                cards.forEach(card => {
+                    const keterangan = card.querySelector(".card-text:last-child").textContent.toLowerCase();
+                    card.style.display = keterangan.includes(filterValue) ? "" : "none";
+                });
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
